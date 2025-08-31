@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: result
+  labels:
+    app: result
+spec:
+  containers:
+    - name: result
+      image: dockersamples/examplevotingapp_result:latest
+      ports:
+        - containerPort: 80
+          name: result
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+        

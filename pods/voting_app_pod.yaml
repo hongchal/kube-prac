@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: vote
+  labels:
+    app: vote
+spec:
+  containers:
+    - name: vote
+      image: dockersamples/examplevotingapp_vote:latest
+      ports:
+        - containerPort: 80
+          name: vote
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "50m"
+        limits:
+          memory: "128Mi"
+          cpu: "100m"
+        
