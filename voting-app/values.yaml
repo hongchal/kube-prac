@@ -39,6 +39,7 @@ components:
         - port: 5432
           targetPort: 5432
           name: db-service
+      name: db
     serviceAccount:
       create: true
       annotations: {}
@@ -73,6 +74,7 @@ components:
         - port: 6379
           targetPort: 6379
           name: redis-service
+      name: redis
     serviceAccount:
       create: true
       annotations: {}
@@ -108,6 +110,7 @@ components:
           targetPort: 80
           nodePort: 30001
           name: vote-service
+      name: vote
     serviceAccount:
       create: true
       annotations: {}
@@ -123,6 +126,12 @@ components:
       - name: result
         containerPort: 80
         protocol: TCP
+    env:
+      POSTGRES_HOST: "db"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres123"
+      POSTGRES_DB: "postgres"
     resources:
       limits:
         cpu: 100m
@@ -137,6 +146,7 @@ components:
           targetPort: 80
           nodePort: 30002
           name: result-service
+      name: result
     serviceAccount:
       create: true
       annotations: {}
@@ -148,6 +158,12 @@ components:
       repository: dockersamples/examplevotingapp_worker
       tag: "latest"
       pullPolicy: IfNotPresent
+    env:
+      POSTGRES_HOST: "db"
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres123"
+      POSTGRES_DB: "postgres"
     resources:
       limits:
         cpu: 100m

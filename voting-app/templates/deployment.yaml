@@ -4,7 +4,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "voting-app.fullname" $ }}-{{ $component }}
+  name: {{ $component }}
   labels:
     {{- include "voting-app.labels" $ | nindent 4 }}
     app: {{ $component }}
@@ -28,7 +28,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "voting-app.serviceAccountName" $ }}-{{ $component }}
+      serviceAccountName: {{ $component }}
       {{- with $config.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -66,10 +66,10 @@ spec:
               mountPath: {{ $config.persistence.mountPath }}
           {{- end }}
       {{- if and $config.persistence $config.persistence.enabled }}
-      volumes:
-        - name: {{ $component }}-data
-          persistentVolumeClaim:
-            claimName: {{ include "voting-app.fullname" $ }}-{{ $component }}
+                volumes:
+            - name: {{ $component }}-data
+              persistentVolumeClaim:
+                claimName: {{ $component }}
       {{- end }}
 {{- end }}
 {{- end }}
