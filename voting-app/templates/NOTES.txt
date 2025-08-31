@@ -1,0 +1,24 @@
+1. Get the application URL by running these commands:
+{{- range $component, $config := .Values.components }}
+{{- if and $config.enabled $config.service (eq $config.service.type "NodePort") }}
+  export {{ $component | upper }}_NODE_PORT=$(kubectl get --namespace {{ $.Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "voting-app.fullname" $ }}-{{ $component }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ $.Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo {{ $component | title }} app URL: http://$NODE_IP:${{ $component | upper }}_NODE_PORT
+{{- end }}
+{{- end }}
+
+2. Check the status of your deployment:
+   kubectl get pods --namespace {{ .Release.Namespace }}
+
+3. View the logs:
+   kubectl logs --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "voting-app.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+
+4. Get more information about the services:
+   kubectl get svc --namespace {{ .Release.Namespace }}
+
+5. Component status:
+{{- range $component, $config := .Values.components }}
+{{- if $config.enabled }}
+   - {{ $component }}: {{ $config.replicas | default 1 }} replica(s)
+{{- end }}
+{{- end }}

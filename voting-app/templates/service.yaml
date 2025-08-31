@@ -1,0 +1,27 @@
+{{- range $component, $config := .Values.components }}
+{{- if and $config.enabled $config.service }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "voting-app.fullname" $ }}-{{ $component }}
+  labels:
+    {{- include "voting-app.labels" $ | nindent 4 }}
+    app: {{ $component }}
+spec:
+  type: {{ $config.service.type }}
+  ports:
+    {{- range $config.service.ports }}
+    - port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      {{- if and (eq $config.service.type "NodePort") .nodePort }}
+      nodePort: {{ .nodePort }}
+      {{- end }}
+      protocol: {{ .protocol | default "TCP" }}
+      name: {{ .name }}
+    {{- end }}
+  selector:
+    {{- include "voting-app.selectorLabels" $ | nindent 4 }}
+    app: {{ $component }}
+{{- end }}
+{{- end }}

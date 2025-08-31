@@ -1,0 +1,75 @@
+{{- range $component, $config := .Values.components }}
+{{- if $config.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "voting-app.fullname" $ }}-{{ $component }}
+  labels:
+    {{- include "voting-app.labels" $ | nindent 4 }}
+    app: {{ $component }}
+spec:
+  replicas: {{ $config.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "voting-app.selectorLabels" $ | nindent 6 }}
+      app: {{ $component }}
+  template:
+    metadata:
+      labels:
+        {{- include "voting-app.selectorLabels" $ | nindent 8 }}
+        app: {{ $component }}
+      {{- with $config.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "voting-app.serviceAccountName" $ }}-{{ $component }}
+      {{- with $config.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $component }}
+          {{- with $config.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ $config.image.repository }}:{{ $config.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $config.image.pullPolicy | default "IfNotPresent" }}
+          {{- if $config.ports }}
+          ports:
+            {{- range $config.ports }}
+            - name: {{ .name }}
+              containerPort: {{ .containerPort }}
+              protocol: {{ .protocol | default "TCP" }}
+            {{- end }}
+          {{- end }}
+          {{- if $config.env }}
+          env:
+            {{- range $key, $value := $config.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          {{- end }}
+          {{- with $config.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if and $config.persistence $config.persistence.enabled }}
+          volumeMounts:
+            - name: {{ $component }}-data
+              mountPath: {{ $config.persistence.mountPath }}
+          {{- end }}
+      {{- if and $config.persistence $config.persistence.enabled }}
+      volumes:
+        - name: {{ $component }}-data
+          persistentVolumeClaim:
+            claimName: {{ include "voting-app.fullname" $ }}-{{ $component }}
+      {{- end }}
+{{- end }}
+{{- end }}

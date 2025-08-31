@@ -1,0 +1,164 @@
+# Default values for voting-app
+# This is a YAML-formatted file.
+
+# Global settings
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Image pull secrets for all components
+imagePullSecrets: []
+
+# Component configurations
+components:
+  db:
+    enabled: true
+    replicas: 1
+    image:
+      repository: postgres
+      tag: "15-alpine"
+      pullPolicy: IfNotPresent
+    ports:
+      - name: db
+        containerPort: 5432
+        protocol: TCP
+    env:
+      POSTGRES_PASSWORD: "postgres123"
+      POSTGRES_USER: "postgres"
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    service:
+      type: ClusterIP
+      ports:
+        - port: 5432
+          targetPort: 5432
+          name: db-service
+    serviceAccount:
+      create: true
+      annotations: {}
+    persistence:
+      enabled: false
+      mountPath: /var/lib/postgresql/data
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+
+  redis:
+    enabled: true
+    replicas: 1
+    image:
+      repository: redis
+      tag: "alpine"
+      pullPolicy: IfNotPresent
+    ports:
+      - name: redis
+        containerPort: 6379
+        protocol: TCP
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    service:
+      type: ClusterIP
+      ports:
+        - port: 6379
+          targetPort: 6379
+          name: redis-service
+    serviceAccount:
+      create: true
+      annotations: {}
+    persistence:
+      enabled: false
+      mountPath: /data
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+
+  vote:
+    enabled: true
+    replicas: 1
+    image:
+      repository: dockersamples/examplevotingapp_vote
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    ports:
+      - name: vote
+        containerPort: 80
+        protocol: TCP
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    service:
+      type: NodePort
+      ports:
+        - port: 8080
+          targetPort: 80
+          nodePort: 30001
+          name: vote-service
+    serviceAccount:
+      create: true
+      annotations: {}
+
+  result:
+    enabled: true
+    replicas: 1
+    image:
+      repository: dockersamples/examplevotingapp_result
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    ports:
+      - name: result
+        containerPort: 80
+        protocol: TCP
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    service:
+      type: NodePort
+      ports:
+        - port: 8081
+          targetPort: 80
+          nodePort: 30002
+          name: result-service
+    serviceAccount:
+      create: true
+      annotations: {}
+
+  worker:
+    enabled: true
+    replicas: 1
+    image:
+      repository: dockersamples/examplevotingapp_worker
+      tag: "latest"
+      pullPolicy: IfNotPresent
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+    serviceAccount:
+      create: true
+      annotations: {}
+
+# Name overrides
+nameOverride: ""
+fullnameOverride: ""
